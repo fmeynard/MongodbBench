@@ -30,10 +30,22 @@ abstract class BaseCommand extends ContainerAwareCommand
         if (false == isset($this->_dms[$connection])) {
 
             $this->_dms[$connection] =
-            $this->get('doctrine_mongodb.odm'.$connection.'_document_manager');
+            $this->get('doctrine_mongodb.odm.'.$connection.'_document_manager');
         }
 
         return $this->_dms[$connection];
+    }
+
+    protected function getMongoConnection($select_default_db = true) 
+    {
+        $conn = $this->getDocumentManager()->getConnection()->getMongo();
+        
+        if ($select_default_db) {
+
+            //return $conn->selectDatabase($this->getDocumentManager()->getConfiguration()->getDefaultDB());
+        }
+
+        return $conn;
     }
 
     /**
@@ -74,7 +86,7 @@ abstract class BaseCommand extends ContainerAwareCommand
      *
      * @param \Symfony\Component\Console\Output\OutputInterface
      */
-    protected function setOuput(OutputInterface $output)
+    protected function setOutput(OutputInterface $output)
     {
 
         $this->_output = $output;
