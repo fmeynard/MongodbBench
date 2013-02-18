@@ -10,18 +10,21 @@ trait MetricTrait
 	 * @MongoDB\Field(name="s")
 	 */
 	protected $spent;
+	static public $FIELD_SPENT = 's';
 
 	/**
 	 * @MongoDB\Int
 	 * @MongoDB\Field(name="c")
 	 */
 	protected $click;
+	static public $FIELD_CLICK = 'click';
 
 	/**
 	 * @MongoDB\Int
 	 * @MongoDB\Field(name="sc")
 	 */
 	protected $socialClick;
+	static public $FIELD_SOCIAL_CLICK = 'sc';
 
 	/**
 	 * @MongoDB\Int
@@ -89,18 +92,27 @@ trait MetricTrait
 	 */
 	protected $newsfeed_position;
 
-
 	/****************************
 	 * 
 	 * DATABASE GETTERS & SETTERS
 	 *
 	 ***************************/
 
+	/**
+	 * Setter : spent
+	 *
+	 * @param float $value
+	 */
 	public function setSpent($value)
 	{
 		$this->spent = $value;
 	}
 
+	/**
+	 * Getter : spent
+	 *
+	 * @return float
+	 */
 	public function getSpent()
 	{
 		if (isset($this->spent)) {
@@ -137,11 +149,21 @@ trait MetricTrait
 		return 0;
 	}
 
+	/**
+	 * Setter : social click
+	 *
+	 * @param int $value
+	 */
 	public function setSocialClick($value) 
 	{
 		$this->socialClick = $value;
 	}
 
+	/**
+	 * Getter : social click
+	 *
+	 * @return int
+	 */
 	public function getSocialClick()
 	{
 		if (isset($this->socialClick)) {
@@ -152,11 +174,21 @@ trait MetricTrait
 		return 0;
 	}
 
+	/**
+	 * Setter : social unique click
+	 *
+	 * @param int $value
+	 */
 	public function setSocialUniqueClick($value)
 	{
 		$this->socialUniqueClick = $value;
 	}
 
+	/**
+	 * Getter : social unique click
+	 *
+	 * @return int
+	 */
 	public function getSocialUniqueClick()
 	{
 		if (isset($this->socialUniqueClick)) {
@@ -342,11 +374,21 @@ trait MetricTrait
 		return 0;
 	}
 
+	/**
+	 * Setter : newsfeed click
+	 *
+	 * @param int click
+	 */
 	public function setNewsfeedClick($value)
 	{
 		$this->newsfeed_click = $value;
 	}
 
+	/**
+	 * Getter : newsfeed click
+	 *
+	 * @return int
+	 */
 	public function getNewsfeedClick()
 	{
 		if (isset($this->newsfeed_click)) {
@@ -357,7 +399,22 @@ trait MetricTrait
 		return 0;
 	}
 
-	public function setNewsfeedImpression()
+	/**
+	 * Setter : newsfeed impression
+	 *
+	 * @param int $value
+	 */
+	public function setNewsfeedImpression($value)
+	{
+		$this->newsfeed_impression = $value;
+	}
+
+	/**
+	 * Getter : newsfeed impression
+	 *
+	 * @return int
+	 */
+	public function getNewsfeedImpression()
 	{
 		if (isset($this->newsfeed_impression)) {
 
@@ -367,7 +424,22 @@ trait MetricTrait
 		return 0;
 	}
 
-	public function setNewsfeedPosition()
+	/**
+	 * Setter : newsfeed position
+	 *
+	 * @param float $value
+	 */
+	public function setNewsfeedPosition($value)
+	{
+		$this->newsfeed_position = $value;
+	}
+
+	/**
+	 * Getter : newsfeed position
+	 *
+	 * @return float
+	 */
+	public function getNewsfeedPosition()
 	{
 		if (isset($this->newsfeed_position)) {
 
@@ -383,12 +455,22 @@ trait MetricTrait
 	 *
 	 ***************************/
 
+	/**
+	 * Getter : brut
+	 *
+	 * @return float 
+	 */
 	public function getBrut()
 	{
 
 		return $this->getClick * $this->getClickPayout;	
 	}
 
+	/**
+	 * Getter : CTR
+	 *
+	 * @return float
+	 */
 	public function getCTR()
 	{
 		if (0 < $this->getImpression()) {
