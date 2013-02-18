@@ -27,9 +27,9 @@ twig:
 doctrine_mongodb:
     connections:
         default:
-            server: mongodb://dev.performads.fr:27017,mongo-dev-s1.performads.fr:27017/?replicaSet=rs_dev&readPreference=secondaryPreferred
+            server: 5.135.9.59
             options: {}
-    default_database: performads
+    default_database: bench
     document_managers:
         default:
             auto_mapping: true
