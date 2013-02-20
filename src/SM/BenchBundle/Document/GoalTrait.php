@@ -6,19 +6,19 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 trait GoalTrait
 {
 	/**
-	 * @MongoDB\Hash
+	 * @MongoDB\Int
 	 * @MongoDB\Field(name="gnb")
 	 */
 	protected $goals_number;
 
 	/**
-	 * @MongoDB\Hash
+	 * @MongoDB\Float
 	 * @MongoDB\Field(name="gna")
 	 */
 	protected $goals_amount;
 
 	/**
-	 * @MongoDB\Hash
+	 * @MongoDB\String
 	 * @MongoDB\Field(name="gnt")
 	 */
 	protected $goals_type;

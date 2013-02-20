@@ -42,9 +42,9 @@ class GoalsReduceSplitCommand extends BaseReduceGoalsCommand
 		$conn = $dm->getConnection();
         if(!$conn->isConnected()) $conn->connect();
  
-        $mongoClient=$conn->getMongo();
+        $mongoClient  =$conn->getMongo();
 
-        $coll=$mongoClient->selectDB('bench')->selectCollection("StatDayWithSplitGoals");
+        $coll = $mongoClient->selectDB('bench')->selectCollection("StatDayWithSplitGoals");
 		$out = $coll->aggregate($ops);
 
 		$output->writeln(print_r($out));
@@ -167,63 +167,6 @@ class GoalsReduceSplitCommand extends BaseReduceGoalsCommand
 	 */
 	protected function generateStats()
 	{
-		$input  = $this->getInput();
-		$output = $this->getOutput();
-
-		$output->writeln('Cleaning collection');
-
-        $coll = $this->getDocumentManager()->getDocumentCollection('SMGoalsAgregBundle:StatDayWithSplitGoals');
-        $coll->remove(array()); 
-
-        $start = microtime(true);
-        $currents = [];
-
-        $batchInsert = function(&$currents, &$coll) {
-            $coll->batchInsert($currents, array(
-                    "w" => 0,
-                    "j" => 0
-                ));
-        };
-
-        for($i=1;$i<$input->getOption('nbStat');$i++)
-        {
-            $current = array(
-                    'adId' => rand(1, $input->getOption('nbAds')),
-                    'metaId' => rand(1, $input->getOption('nbAds')/100),
-                    'c' => 10 + $i,
-                    's' => 20 + $i,
-                    'sc' => 30 + $i,
-                    'uc' => 40 + $i,
-                    'suc' => 50 + $i,
-                    'i' => 60 + $i,
-                    'g' => array(
-                    		'fb|like|apple' => array(
-                    			'gna' => 2 * $i,
-                    			'gnb' => $i
-                    		),
-                    		'fb|like|microsoft' => array(
-                    			'gna' => 3 * $i,
-                    			'gnb' => $i
-                    		)
-                    	)
-                );
-
-            $currents[] = $current;
-
-            if (count($currents) >= $input->getOption('chunk')) {
-                $batchInsert($currents, $coll);
-                $currents = [];
-
-                $output->writeln("Done : ".$i."/".$input->getOption('nbStat'));
-            }
-        }
-
-        if (count($currents) > 0) {
-            $batchInsert($currents, $coll);
-        }
-
-        $end = microtime(true) - $start;
-
-        $output->writeln('Executed in ' .$end);
+		$this->generateStatDayWithSplitGoals();
 	}
 }
