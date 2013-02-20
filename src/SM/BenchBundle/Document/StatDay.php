@@ -9,7 +9,6 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 class StatDay 
 {
 	use MetricTrait;
-	use GoalTrait; 
 
 	/**
 	 * @MongoDB\Id

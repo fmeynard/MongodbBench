@@ -17,7 +17,7 @@ trait MetricTrait
 	 * @MongoDB\Field(name="c")
 	 */
 	protected $click;
-	static public $FIELD_CLICK = 'click';
+	static public $FIELD_CLICK = 'c';
 
 	/**
 	 * @MongoDB\Int

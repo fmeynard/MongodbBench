@@ -23,6 +23,12 @@ trait GoalTrait
 	 */
 	protected $goals_type;
 
+	/**
+	 * @MongoDB\Hash
+	 * @MongoDB\Field(name="oid")
+	 */
+	protected $object_id;
+
 	/****************************
 	 * 
 	 * DATABASE GETTERS & SETTERS

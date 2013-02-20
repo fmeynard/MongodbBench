@@ -22,6 +22,7 @@ class AppKernel extends Kernel
             new Doctrine\Bundle\MongoDBBundle\DoctrineMongoDBBundle(),
             new SM\BenchBundle\SMBenchBundle(),
             new SM\FlatAdStatBundle\SMFlatAdStatBundle(),
+            new SM\GoalsAgregBundle\SMGoalsAgregBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
