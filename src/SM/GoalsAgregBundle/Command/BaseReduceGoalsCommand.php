@@ -32,7 +32,7 @@ abstract class BaseReduceGoalsCommand extends BaseCommand
 			->addOption('useAG',         null, InputOption::VALUE_OPTIONAL, $this->help['useAG'],         false)
             ->addOption('useMR',         null, InputOption::VALUE_OPTIONAL, $this->help['useMR'],         false)
             ->addOption('nbAds',         null, InputOption::VALUE_OPTIONAL, $this->help['nbAds'],         500)
-            ->addOption('nbStat',        null, InputOption::VALUE_OPTIONAL, $this->help['nbStat'],        300000)
+            ->addOption('nbStat',        null, InputOption::VALUE_OPTIONAL, $this->help['nbStat'],        500*600)
             ->addOption('chunk',         null, InputOption::VALUE_OPTIONAL, $this->help['chunk'],         1000);
 	}
 
@@ -65,6 +65,18 @@ abstract class BaseReduceGoalsCommand extends BaseCommand
 		if ($input->getOption('generateStats')) {
 			$this->generateStats();
 		}
+
+		$this->start($input, $output);
+	}
+
+	/**
+	 * Start 
+	 *
+	 * @param InputInterface $input
+	 * @param OutputInterface $output
+	 */
+	protected function start(InputInterface $input, OutputInterface $output) 
+	{
 
 		if ($input->getOption('useAG')) {
 			$this->executeAG($input, $output);
@@ -146,11 +158,13 @@ abstract class BaseReduceGoalsCommand extends BaseCommand
                     'suc' => 50 + $i,
                     'i' => 60 + $i,
                     'g' => array(
-                    		'fb|like|apple' => array(
+                    		array(
+                    			'ccc' => 'fb|like|apple',
                     			'gna' => 2 * $i,
                     			'gnb' => $i
                     		),
-                    		'fb|like|microsoft' => array(
+                    		array(
+                    			'ccc' => 'fb|like|microsoft',
                     			'gna' => 3 * $i,
                     			'gnb' => $i
                     		)
@@ -174,5 +188,57 @@ abstract class BaseReduceGoalsCommand extends BaseCommand
         $end = microtime(true) - $start;
 
         $output->writeln('Stat day Executed in ' .$end);
+	}
+
+	/**
+	 * Generate StatDay with 
+	 */
+	public function generateSingleGoals()
+	{
+		$input  = $this->getInput();
+		$output = $this->getOutput();
+
+		$output->writeln('Cleaning collection');
+
+		$coll = $this->getDocumentManager()->getDocumentCollection('SMGoalsAgregBundle:SingleGoal');
+		$coll->remove(array());
+
+		$start = microtime(true);
+		$currents = [];
+
+		$batchInsert = function(&$currents, &$coll) {
+            $coll->batchInsert($currents, array(
+                    "w" => 0,
+                    "j" => 0
+                ));
+        };
+
+        for($i=1;$i<$input->getOption('nbStat');$i++)
+        {
+            $current = array(
+                    'adId' => rand(1, $input->getOption('nbAds')),
+                    'gnb'  => rand(1,5),
+                    'gna'  => rand(1,5) * rand(10,30),
+                    'gnt'  => (rand(1,2) % 2) ? 'eng' : 'acq',
+                    'obid' => rand(1,10)
+                );
+
+            $currents[] = $current;
+
+            if (count($currents) >= $input->getOption('chunk')) {
+                $batchInsert($currents, $coll);
+                $currents = [];
+
+                $output->writeln("Done : ".$i."/".$input->getOption('nbStat'));
+            }
+        }
+
+        if (count($currents) > 0) {
+            $batchInsert($currents, $coll);
+        }
+
+        $end = microtime(true) - $start;
+
+        $output->writeln('Goals Executed in ' .$end);
 	}
 }
