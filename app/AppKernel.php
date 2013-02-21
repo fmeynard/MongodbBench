@@ -23,6 +23,7 @@ class AppKernel extends Kernel
             new SM\BenchBundle\SMBenchBundle(),
             new SM\FlatAdStatBundle\SMFlatAdStatBundle(),
             new SM\GoalsAgregBundle\SMGoalsAgregBundle(),
+            new SM\PokeEmbedBundle\SMPokeEmbedBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
