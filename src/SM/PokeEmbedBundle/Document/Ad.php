@@ -8,10 +8,14 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
  */
 class Ad
 {
+	/**
+	 * @MongoDB\Id
+	 */
+	protected $id;
 
 	/**
 	 * @MongoDB\Date
-	 * @MongoDB\Field(name="createdAt")
+	 * @MongoDB\Field(name="cAt")
 	 */
 	protected $createdAt;
 
@@ -71,9 +75,20 @@ class Ad
 
 	/**
 	 * @MongoDB\Int
-	 * @MongoDB\FIeld(name="syncSt")
+	 * @MongoDB\FIeld(name="sSt")
 	 */
 	protected $synchroStatus;
+
+	public function setId($value)
+	{
+		$this->id = $value;
+	}
+
+	public function getId()
+	{
+
+		return $this->id;
+	}
 
 	public function setCreatedAt($value)
 	{
