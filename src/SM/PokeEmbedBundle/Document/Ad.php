@@ -1,5 +1,5 @@
 <?php
-namespace SM\PokeEmbedBundle;
+namespace SM\PokeEmbedBundle\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 
@@ -78,6 +78,13 @@ class Ad
 	 * @MongoDB\FIeld(name="sSt")
 	 */
 	protected $synchroStatus;
+
+	/**
+	 * @MongoDB\Hash 
+	 * @MongoDB\Field(name="dGS") 
+	 */
+	protected $dailyGoalStats;
+
 
 	public function setId($value)
 	{
