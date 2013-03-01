@@ -6,7 +6,7 @@ use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 /**
  * @MongoDB\Document
  */
-class Target 
+class Target
 {
 	/**
 	 * @MongoDB\Hash
@@ -337,13 +337,13 @@ class Target
 
 	public function setSize($value)
 	{
-		$this->szie = $value;
+		$this->size = $value;
 	}
 
 	public function getSize()
 	{
 
-		retunr $this->size;
+		return $this->size;
 	}
 
 	public function setZip($value)

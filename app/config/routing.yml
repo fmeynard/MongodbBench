@@ -1,3 +1,13 @@
+sm_split_collection:
+    resource: "@SMSplitCollectionBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
+sm_bucket_poke:
+    resource: "@SMBucketPokeBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
 sm_poke_embed:
     resource: "@SMPokeEmbedBundle/Controller/"
     type:     annotation

@@ -27,7 +27,7 @@ class GenerateDataCommand extends BaseCommand
 			->setDescription($this->description)
             ->addOption('nbAds',         null, InputOption::VALUE_OPTIONAL, $this->help['nbAds'],         5000)
             ->addOption('nbStat',        null, InputOption::VALUE_OPTIONAL, $this->help['nbStat'],        600)
-            ->addOption('chunk',         null, InputOption::VALUE_OPTIONAL, $this->help['chunk'],         1000);
+            ->addOption('chunk',         null, InputOption::VALUE_OPTIONAL, $this->help['chunk'],         10);
 	}
 
 	/**
@@ -55,7 +55,7 @@ class GenerateDataCommand extends BaseCommand
 
         $this->clearStats();
 		$this->generateAds();
-		$this->insert();
+		//$this->insert();
 	}
 
 
@@ -63,6 +63,9 @@ class GenerateDataCommand extends BaseCommand
 	{
 		$this->getOutput()->writeln('Start Generating Ads');
 		for ($i=1; $i<=$this->getInput()->getOption('nbAds'); $i++) {
+
+
+
 			$date = new \MongoDate(strtotime('-'.$i.' days'));
 			$mId  = floor($this->getInput()->getOption('nbAds')/500);
 
@@ -78,6 +81,16 @@ class GenerateDataCommand extends BaseCommand
 					'dMS'  => $this->generateStats(),
 					'dGS'  => $this->generateGoals()
 				);
+
+			if($i % $this->getInput()->getOption('chunk') === 0) {
+				$this->insert($this->getInput()->getOption('chunk'), $i);
+			}
+
+			echo "COunt : " . count($this->ads)."\n";
+		}
+
+		if(count($this->ads) > 0) {
+			$this->insert($this->getInput()->getOption('chunk'), $i);
 		}
 		$this->getOutput()->writeln('ENd Generating Ads');
 	}
@@ -87,14 +100,14 @@ class GenerateDataCommand extends BaseCommand
 		$goals = array();
 
 		for ($i=1; $i<=$this->getInput()->getOption('nbStat'); $i++) {
-			//echo $i . "\n";
 			$gnb = rand(1,1000);
 
 			$goals[] = array(
 					'gna' => $gnb * floatval('1.'+rand(0, 999)),
 					'gnb' => $gnb,
 					'gnt' => ($i%2==0) ? 'eng' : 'acq',
-					'oid' => rand(1,5)
+					'oid' => rand(1,5),
+					'd'   => new \MongoDate(strtotime('-'.$i.' days')),
 				);
 		}
 
@@ -127,6 +140,7 @@ class GenerateDataCommand extends BaseCommand
 					'suc' => $socialUClick,
 					'i'   => $imp,
 					'si'  => $socialImp,
+					'd'   => new \MongoDate(strtotime('-'.$i.' days')),
 					'sui' => $socialUImp,
 					'cp'  => $impPayout/2,
 					'nfi' => $nf_imp,
@@ -141,20 +155,23 @@ class GenerateDataCommand extends BaseCommand
 	/**
 	 * Insert datas in DB
 	 */
-	protected function insert()
+	protected function insert($chunk, $i)
 	{
-		$chunks = array_chunk($this->ads, $this->getInput()->getOption('chunk'));
+			$this->getOutput()->writeln('Chunk insert ['.$chunk . ':'. $i . ']');
+				$coll = $this->getDocumentManager()->getDocumentCollection('SMPokeEmbedBundle:Ad');
 
-		foreach ($chunks as $chunk) {
-			$coll = $this->getDocumentManager()->getDocumentCollection('SMPokeEmbedBundle:Ad');
-
-            $coll->batchInsert($chunk, array(
+            $coll->batchInsert($this->ads, array(
                     "w" => 0,
                     "j" => 0
                 ));
-		}
+
+            $this->ads = array();
+		
 	}
 
+	/**
+ 	 * CLear Stats
+ 	 */
 	public function clearStats()
     {
         $this->getOutput()->writeln('Cleaning collection');

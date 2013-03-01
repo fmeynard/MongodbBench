@@ -24,6 +24,8 @@ class AppKernel extends Kernel
             new SM\FlatAdStatBundle\SMFlatAdStatBundle(),
             new SM\GoalsAgregBundle\SMGoalsAgregBundle(),
             new SM\PokeEmbedBundle\SMPokeEmbedBundle(),
+            new SM\BucketPokeBundle\SMBucketPokeBundle(),
+            new SM\SplitCollectionBundle\SMSplitCollectionBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
