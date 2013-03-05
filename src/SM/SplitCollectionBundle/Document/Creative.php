@@ -1,5 +1,5 @@
 <?php
-namespace SM\SplitCollectionBundle\Document
+namespace SM\SplitCollectionBundle\Document;
 
 use SM\PokeEmbedBundle\Document\Creative as BaseCreative;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;

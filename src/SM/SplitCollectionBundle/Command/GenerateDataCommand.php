@@ -31,7 +31,8 @@ class GenerateDataCommand extends BaseCommand
             ->addOption('nbStat',        null, InputOption::VALUE_OPTIONAL, $this->help['nbStat'],        180)
             ->addOption('chunk',         null, InputOption::VALUE_OPTIONAL, $this->help['chunk'],         1000)
             ->addOption('splitAlt',      null, InputOption::VALUE_OPTIONAL, $this->help['splitAlt'])
-            ->addOption('splitAltOld',      null, InputOption::VALUE_OPTIONAL, $this->help['splitAlt']);
+            ->addOption('splitAltOld',   null, InputOption::VALUE_OPTIONAL, $this->help['splitAlt'])
+            ->addOption('split6',        null, InputOption::VALUE_OPTIONAL, $this->help['splitAlt']);
 	}
 
 	/**
@@ -56,7 +57,9 @@ class GenerateDataCommand extends BaseCommand
         $output->writeln("****************************");
 
         //ggc_enable();
-        if ($input->getOption('splitAlt')) {
+        if ($input->getOption('split6')) {
+        	$this->generateSplit6();
+        } elseif ($input->getOption('splitAlt')) {
         	$this->goalsByObjectId($input, $output);
         } elseif ($input->getOption('splitAlt')) {
         	$this->goalsByObjectIdOld($input, $output);
@@ -64,7 +67,6 @@ class GenerateDataCommand extends BaseCommand
 
 			$this->generateDayStats($input, $output);
 			$this->generateGoals($input, $output);
-
 		}
 
 		//gc_disable();
@@ -320,7 +322,6 @@ class GenerateDataCommand extends BaseCommand
 								't'  => (in_array($gv[$z], $acq)) ? 'acq' : 'eng',
 								'o'  => $w
 							);
-
 					}
 
 					$current = array(
@@ -480,6 +481,136 @@ class GenerateDataCommand extends BaseCommand
 
 		if (count($currents2) > 0) {
 			$this->batchInsert($currents2, $coll2);
+		}
+	}
+
+	protected function generateSplit6()
+	{
+		$input  = $this->getInput();
+		$output = $this->getOutput();
+
+		$nbStat = $input->getOption('nbStat');
+        $chunk  = $input->getOption('chunk');
+        $nbAds  = $input->getOption('nbAds');
+
+		$output->writeln('Cleaning collection');
+
+		$m = new \MongoClient('mongodb://5.135.9.59');
+        $db = $m->selectDB('bench');
+        $coll = $db->selectCollection('adSplitBucket');
+		$coll->remove(array());
+
+		$start = microtime(true);
+		$adStats    = [];
+		$weekStats  = [];
+		$monthStats = [];
+
+		$last_week  = null;
+		$last_month = null;
+		$aWeek      = null;
+		$aMonth     = null;
+
+		$adsMeta    = [];
+
+
+		for ($i=1; $i<=$nbAds;$i++) {
+			for ($x=1; $x<=$nbStat; $x++) {
+				$fbId = $i;
+		        $adId = $i;
+		        $time = strtotime("- $x days");
+		        $date = new \MongoDate($time);
+
+		        $imp          = rand(1, 500000);
+				$uniqueImp    = rand(1, $imp);
+				$socialImp    = rand(1, $uniqueImp);
+				$socialUImp   = rand(1, $socialImp);
+				$click        = rand(1, $imp);
+				$uniqueClick  = rand(1, $click);
+				$socialClick  = rand(1, $socialImp);
+				$socialUClick = rand(1, $socialClick);
+				$nf_imp       = rand(1, $imp);
+				$nf_click     = rand(1, $nf_imp);
+				$nf_pos       = rand(1, 15);
+				$impPayout    = floatval('1.'+rand(0, 999));
+				$spent        = $impPayout * ceil($imp / 1000);
+
+	        	if(!isset($this->adsMeta[$i])) {
+	        		$this->adsMeta[$i] = $input->getOption('nbAds')/100;
+	        	}
+
+	            $adStat = array(
+	            		'fbId' => $fbId,
+	            		'adId' => $adId,
+	                    'metaId' => $this->adsMeta[$i],
+	                    's'   => $spent,
+						'c'   => $click,
+						'sc'  => $socialClick,
+						'suc' => $socialUClick,
+						'i'   => $imp,
+						'si'  => $socialImp,
+						'sui' => $socialUImp,
+						'cp'  => $impPayout/2,
+						'nfi' => $nf_imp,
+						'nfc' => $nf_click,
+						'nfp' => $nf_pos,
+						'db' => array(
+							'd' => (int) date('Ymd', $time),
+							)
+	                );
+
+	            $coll->insert($adStat);
+	            
+	            $coll->update(
+	            	array(
+	            		'fbId'   => $fbId, 
+	            		'adId'   => $adId, 
+	            		'metaId' => $this->adsMeta[$i],
+	            		'db.w'   => date('Y', $time).'-'.date('W', $time)
+	            		),
+	            	array(
+	            		'$inc' => array(
+	            			's'   => $spent,
+							'c'   => $click,
+							'sc'  => $socialClick,
+							'suc' => $socialUClick,
+							'i'   => $imp,
+							'si'  => $socialImp,
+							'sui' => $socialUImp,
+							'cp'  => $impPayout/2,
+							'nfi' => $nf_imp,
+							'nfc' => $nf_click,
+							'nfp' => $nf_pos,
+	            			),
+	            		),
+	            	array('upsert'=>true)
+	            	);
+
+	            $coll->update(
+	            	array(
+	            		'fbId'   => $fbId, 
+	            		'adId'   => $adId,
+	            		'metaId' => $this->adsMeta[$i],
+	            		'db.m'   => date('Y', $time).'-'.date('m', $time)
+	            		),
+	            	array(
+	            		'$inc' => array(
+	            			's'   => $spent,
+							'c'   => $click,
+							'sc'  => $socialClick,
+							'suc' => $socialUClick,
+							'i'   => $imp,
+							'si'  => $socialImp,
+							'sui' => $socialUImp,
+							'cp'  => $impPayout/2,
+							'nfi' => $nf_imp,
+							'nfc' => $nf_click,
+							'nfp' => $nf_pos,
+	            			),
+	            		),
+	            	array('upsert'=>true)
+	            	);
+
+			}
 		}
 	}
 

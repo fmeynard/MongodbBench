@@ -6,6 +6,7 @@ use SM\BenchBundle\Command\baseCommand;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use SM\SplitCollectionBundle\Lib\SMDateInterval;
 
 class AgregByDateCommand extends BaseCommand
 {
@@ -29,7 +30,8 @@ class AgregByDateCommand extends BaseCommand
 			->addOption('split2', null, InputOption::VALUE_OPTIONAL, $this->help['split'])
 			->addOption('split3', null, InputOption::VALUE_OPTIONAL, $this->help['split'])
 			->addOption('split4', null, InputOption::VALUE_OPTIONAL, $this->help['split'])
-			->addOption('split5', null, InputOption::VALUE_OPTIONAL, $this->help['split']);
+			->addOption('split5', null, InputOption::VALUE_OPTIONAL, $this->help['split'])
+			->addOption('split6', null, InputOption::VALUE_OPTIONAL, $this->help['split']);
 
 	}	
 
@@ -67,6 +69,8 @@ class AgregByDateCommand extends BaseCommand
         	$this->split4();
         } elseif($input->getOption('split5')) {
         	$this->split5();
+        } elseif($input->getOption('split6')) {
+        	$this->split6();
         }
 	}
 
@@ -230,7 +234,7 @@ class AgregByDateCommand extends BaseCommand
 		\MongoCursor::$timeout = 120000;
 
 		$ins = [];
-		for($i=1; $i<2; $i++) $ins[] = $i;
+		for($i=1; $i<500; $i++) $ins[] = $i;
 
 		$coll = $db->selectCollection("goalstatsplit5");
 		$ops = array(
@@ -245,7 +249,6 @@ class AgregByDateCommand extends BaseCommand
 						'_id' => array(
 							'adId' => '$adId',
 							'fbId' => '$fbId',
-							'd'    => '$d'
 							),
 						'goals' => array('$addToSet'=> '$goals')
 					)
@@ -268,7 +271,95 @@ class AgregByDateCommand extends BaseCommand
 			);
 
 		$goals = $coll->aggregate($ops);
+	}
 
-		print_r($goals); 
+	public function split6()
+	{
+
+		$start = new \DateTime();
+		$start->setTimestamp(strtotime('1 january 2013'));
+
+		$end   = new \DateTime();
+		$end->setTimestamp(strtotime('12 february 2013'));
+
+		$trs = SMDateInterval::getTimeRanges($start->format('Y-m-d'), $end->format('Y-m-d'),'Y-m-d');
+
+		$days = [];
+		foreach ($trs['days'] as $dayTR) {
+			$days[] = (int) $dayTR->format('Ymd');
+		}
+
+		echo "<<<< SPLIT 6 AGGREG >>>> \n";
+		$m    = new \MongoClient('mongodb://5.135.9.59');
+        $db   = $m->selectDB('bench');
+
+		\MongoCursor::$timeout = 120000;
+
+		$ins = [];
+		for($i=1; $i<=1; $i++) $ins[] = $i;
+
+		$coll = $db->selectCollection("adSplitBucket");
+
+		$trsArray = array(
+			array('db.w' => array('$in' => $trs['weeks'])),
+			array('db.m' => array('$in' => $trs['months'])),
+			array('db.d' => array('$in' => $days))
+		);
+
+		print_r($trsArray);
+
+		$ops = array(
+				array(
+					'$match' => array(
+						'adId' => array('$in'=>$ins),
+						'$or'  => $trsArray
+						)
+					),
+				array(
+					'$group' => array(
+						'_id' => array(
+							'adId' => '$adId',
+							'fbId' => '$fbId',
+							),
+						'i' => array('$sum' => '$i'),
+						'c' => array('$sum'=>'$c'),
+						's' => array('$sum'=>'$s'),
+						'sc' => array('$sum'=>'$sc'),
+						'uc' => array('$sum'=>'$uc'),
+						'suc'=> array('$sum'=>'$suc'),
+						'dbs' => array('$addToSet'=>'$db')
+					)
+				),
+			);
+
+		$stats = $coll->aggregate($ops);
+
+		$ops = array(
+				array(
+					'$match' => array(
+						'adId' => array('$in'=>$ins),
+						'db.d' => array('$gte'=>new \MongoDate($start->getTimestamp())),
+						)
+					),
+				array(
+					'$group' => array(
+						'_id' => array(
+							'adId' => '$adId',
+							'fbId' => '$fbId',
+							),
+						'i' => array('$sum' => '$i'),
+						'c' => array('$sum'=>'$c'),
+						's' => array('$sum'=>'$s'),
+						'sc' => array('$sum'=>'$sc'),
+						'uc' => array('$sum'=>'$uc'),
+						'suc'=> array('$sum'=>'$suc'),
+						'dbs' => array('$addToSet'=>'$db')
+						)
+					)
+			);
+
+		$stats2 = $coll->aggregate($ops);
+		print_r($stats);
+		print_r($stats2);
 	}
 }
