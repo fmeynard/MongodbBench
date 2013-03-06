@@ -498,7 +498,7 @@ class GenerateDataCommand extends BaseCommand
 
 		$output->writeln('Cleaning collection');
 
-		$m = new \MongoClient('mongodb://5.135.9.59');
+		$m = new \MongoClient('mongodb://91.121.177.33');
         $db = $m->selectDB('bench');
         $coll = $db->selectCollection('adSplitBucket');
 
