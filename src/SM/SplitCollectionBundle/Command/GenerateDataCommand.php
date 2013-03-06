@@ -15,7 +15,8 @@ class GenerateDataCommand extends BaseCommand
 			'nbAds'         => '',
 			'nbStat'        => '',
 			'chunk' => '',
-			'splitAlt'     => ''
+			'splitAlt'     => '',
+			'startNb' => ''
 		);
 
 	/**
@@ -27,9 +28,10 @@ class GenerateDataCommand extends BaseCommand
 	{
 		$this->setName('bench:split:generateData')
 			->setDescription($this->description)
-            ->addOption('nbAds',         null, InputOption::VALUE_OPTIONAL, $this->help['nbAds'],         25000)
+            ->addOption('nbAds',         null, InputOption::VALUE_OPTIONAL, $this->help['nbAds'],         200)
             ->addOption('nbStat',        null, InputOption::VALUE_OPTIONAL, $this->help['nbStat'],        180)
             ->addOption('chunk',         null, InputOption::VALUE_OPTIONAL, $this->help['chunk'],         1000)
+            ->addOption('startNb',       null, InputOption::VALUE_OPTIONAL, $this->help['startNb'],       1)
             ->addOption('splitAlt',      null, InputOption::VALUE_OPTIONAL, $this->help['splitAlt'])
             ->addOption('splitAltOld',   null, InputOption::VALUE_OPTIONAL, $this->help['splitAlt'])
             ->addOption('split6',        null, InputOption::VALUE_OPTIONAL, $this->help['splitAlt']);
@@ -489,16 +491,16 @@ class GenerateDataCommand extends BaseCommand
 		$input  = $this->getInput();
 		$output = $this->getOutput();
 
-		$nbStat = $input->getOption('nbStat');
-        $chunk  = $input->getOption('chunk');
-        $nbAds  = $input->getOption('nbAds');
+		$nbStat  = $input->getOption('nbStat');
+        $chunk   = $input->getOption('chunk');
+        $nbAds   = $input->getOption('nbAds');
+        $startNb = $input->getOption('startNb');
 
 		$output->writeln('Cleaning collection');
 
 		$m = new \MongoClient('mongodb://5.135.9.59');
         $db = $m->selectDB('bench');
         $coll = $db->selectCollection('adSplitBucket');
-		$coll->remove(array());
 
 		$start = microtime(true);
 		$adStats    = [];
@@ -512,8 +514,7 @@ class GenerateDataCommand extends BaseCommand
 
 		$adsMeta    = [];
 
-
-		for ($i=1; $i<=$nbAds;$i++) {
+		for ($i=$startNb; $i<=($nbAds+$startNb);$i++) {
 			for ($x=1; $x<=$nbStat; $x++) {
 				$fbId = $i;
 		        $adId = $i;

@@ -277,7 +277,7 @@ class AgregByDateCommand extends BaseCommand
 	{
 
 		$start = new \DateTime();
-		$start->setTimestamp(strtotime('1 january 2013'));
+		$start->setTimestamp(strtotime('1 september 2012'));
 
 		$end   = new \DateTime();
 		$end->setTimestamp(strtotime('12 february 2013'));
@@ -296,7 +296,7 @@ class AgregByDateCommand extends BaseCommand
 		\MongoCursor::$timeout = 120000;
 
 		$ins = [];
-		for($i=1; $i<=1; $i++) $ins[] = $i;
+		for($i=1; $i<=2000; $i++) $ins[] = $i;
 
 		$coll = $db->selectCollection("adSplitBucket");
 
@@ -306,13 +306,16 @@ class AgregByDateCommand extends BaseCommand
 			array('db.d' => array('$in' => $days))
 		);
 
-		print_r($trsArray);
-
+		$startm = microtime(true);
 		$ops = array(
 				array(
 					'$match' => array(
 						'adId' => array('$in'=>$ins),
-						'$or'  => $trsArray
+						'$or'  => array(
+								array('db.w' => array('$in' => $trs['weeks'])),
+								array('db.m' => array('$in' => $trs['months'])),
+								array('db.d' => array('$in' => $days))
+							)
 						)
 					),
 				array(
@@ -334,11 +337,15 @@ class AgregByDateCommand extends BaseCommand
 
 		$stats = $coll->aggregate($ops);
 
+		$endm = microtime(true) - $startm;
+		echo "Agreg with TRS :: ". $endm . "s \n";
+
+		$startm = microtime(true);
 		$ops = array(
 				array(
 					'$match' => array(
 						'adId' => array('$in'=>$ins),
-						'db.d' => array('$gte'=>new \MongoDate($start->getTimestamp())),
+						'db.d' => array('$gte'=>(int) $start->format('Ymd')),
 						)
 					),
 				array(
@@ -359,7 +366,33 @@ class AgregByDateCommand extends BaseCommand
 			);
 
 		$stats2 = $coll->aggregate($ops);
-		print_r($stats);
-		print_r($stats2);
+		$endm = microtime(true) - $startm;
+		echo "Agreg by db.d  :: ". $endm . "s \n";
+
+		$findQuery1 = array(
+						'adId' => array('$in'=>$ins),
+						'$or'  => array(
+								array('db.w' => array('$in' => $trs['weeks'])),
+								array('db.m' => array('$in' => $trs['months'])),
+								array('db.d' => array('$in' => $days))
+							)
+						);
+
+		$findQuery2 = array(
+						'adId' => array('$in'=>$ins),
+						'db.d' => array('$gte'=>(int) $start->format('Ymd')),
+					);
+
+		$startm = microtime(true);
+		$test = $coll->find($findQuery1) ;
+		$endm2= microtime(true) - $startm;
+
+		$startm = microtime(true);
+		$test2 = $coll->find($findQuery2) ;
+		$endm = microtime(true) - $startm;
+		echo "find by db.d  :: ". $endm . "s \n";
+		echo "find by trs  :: ". $endm2 . "s \n";
+
+		foreach ($test as $current) print_r($current);
 	}
 }
