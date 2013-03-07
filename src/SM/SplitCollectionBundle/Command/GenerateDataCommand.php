@@ -29,7 +29,7 @@ class GenerateDataCommand extends BaseCommand
 		$this->setName('bench:split:generateData')
 			->setDescription($this->description)
             ->addOption('nbAds',         null, InputOption::VALUE_OPTIONAL, $this->help['nbAds'],         200)
-            ->addOption('nbStat',        null, InputOption::VALUE_OPTIONAL, $this->help['nbStat'],        180)
+            ->addOption('nbStat',        null, InputOption::VALUE_OPTIONAL, $this->help['nbStat'],        300)
             ->addOption('chunk',         null, InputOption::VALUE_OPTIONAL, $this->help['chunk'],         1000)
             ->addOption('startNb',       null, InputOption::VALUE_OPTIONAL, $this->help['startNb'],       1)
             ->addOption('splitAlt',      null, InputOption::VALUE_OPTIONAL, $this->help['splitAlt'])
@@ -498,7 +498,7 @@ class GenerateDataCommand extends BaseCommand
 
 		$output->writeln('Cleaning collection');
 
-		$m = new \MongoClient('mongodb://91.121.177.33');
+		$m = new \MongoClient('mongodb://localhost');
         $db = $m->selectDB('bench');
         $coll = $db->selectCollection('adSplitBucket');
 
