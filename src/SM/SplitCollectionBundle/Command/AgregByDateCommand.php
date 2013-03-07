@@ -460,7 +460,7 @@ class AgregByDateCommand extends BaseCommand
 		$ins = [];
 		for($i=1; $i<=2000; $i++) $ins[] = $i;
 
-		$coll  = $db->selectCollection("AdStat7Day");
+		$coll  = $db->selectCollection("AdStat7day");
 		$coll2 = $db->selectCollection("AdStat7Week");
 		$coll3 = $db->selectCollection("AdStat7Month");
 
@@ -469,7 +469,7 @@ class AgregByDateCommand extends BaseCommand
 		$ops = array(
 				array(
 					'$match' => array(
-						'adId' => array('$in'=>$ins),
+						'adId' => array('$in' => $ins),
 						'd'    => array('$in' => $days)
 						)
 					),
