@@ -21,7 +21,7 @@ class GenerateDataCommand extends BaseCommand
 
 	/**
 	 * Configure current command
-	 *
+	 *5.135.9.59
 	 * 
 	 */
 	public function configure()
@@ -85,7 +85,7 @@ class GenerateDataCommand extends BaseCommand
 		$output->writeln('Cleaning collection');
 
         //$coll = $this->getDocumentManager()->getDocumentCollection('SMSplitCollectionBundle:AdStat');
-        $m = new \MongoClient('mongodb://5.135.9.59');
+        $m = new \MongoClient('mongodb://'.$input->getOption('host'));
         $db = $m->selectDB('bench');
         $coll = $db->selectCollection('adstatsplit');
         $coll->remove(array()); 
@@ -183,7 +183,7 @@ class GenerateDataCommand extends BaseCommand
 
 		$output->writeln('Cleaning collection');
 
-		$m = new \MongoClient('mongodb://5.135.9.59');
+		$m = new \MongoClient('mongodb://' . $input->getOption('host'));
         $db = $m->selectDB('bench');
         $coll = $db->selectCollection('goalstatsplit');
 		$coll->remove(array());
@@ -281,7 +281,7 @@ class GenerateDataCommand extends BaseCommand
 
 		$output->writeln('Cleaning collection');
 
-		$m = new \MongoClient('mongodb://5.135.9.59');
+		$m = new \MongoClient('mongodb://' . $input->getOption('host'));
         $db = $m->selectDB('bench');
         $coll = $db->selectCollection('goalstatsplit4');
 		$coll->remove(array());
@@ -395,7 +395,7 @@ class GenerateDataCommand extends BaseCommand
 
 		$output->writeln('Cleaning collection');
 
-		$m = new \MongoClient('mongodb://5.135.9.59');
+		$m = new \MongoClient('mongodb://'.$input->getOption('host'));
         $db = $m->selectDB('bench');
         $coll = $db->selectCollection('goalstatsplit2');
 		$coll->remove(array());
@@ -496,9 +496,7 @@ class GenerateDataCommand extends BaseCommand
         $nbAds   = $input->getOption('nbAds');
         $startNb = $input->getOption('startNb');
 
-		$output->writeln('Cleaning collection');
-
-		$m = new \MongoClient('mongodb://5.135.9.59');
+		$m = new \MongoClient('mongodb://'.$input->getOption('host'));
         $db = $m->selectDB('bench');
         $coll = $db->selectCollection('adSplitBucket');
 
@@ -592,6 +590,133 @@ class GenerateDataCommand extends BaseCommand
 	            		'adId'   => $adId,
 	            		'metaId' => $this->adsMeta[$i],
 	            		'db.m'   => date('Y', $time).'-'.date('m', $time)
+	            		),
+	            	array(
+	            		'$inc' => array(
+	            			's'   => $spent,
+							'c'   => $click,
+							'sc'  => $socialClick,
+							'suc' => $socialUClick,
+							'i'   => $imp,
+							'si'  => $socialImp,
+							'sui' => $socialUImp,
+							'cp'  => $impPayout/2,
+							'nfi' => $nf_imp,
+							'nfc' => $nf_click,
+							'nfp' => $nf_pos,
+	            			),
+	            		),
+	            	array('upsert'=>true)
+	            	);
+
+			}
+		}
+	}
+
+	public function split7()
+	{
+		$input  = $this->getInput();
+		$output = $this->getOutput();
+
+		$nbStat  = $input->getOption('nbStat');
+        $chunk   = $input->getOption('chunk');
+        $nbAds   = $input->getOption('nbAds');
+        $startNb = $input->getOption('startNb');
+
+		$m = new \MongoClient('mongodb://'.$input->getOption('host'));
+        $db = $m->selectDB('bench');
+        $coll = $db->selectCollection('AdStat7day');
+        $coll2 = $db->selectCollection('AdStat7Week');
+        $coll3 = $db->selectCollection('AdStat7Month');
+
+		$start = microtime(true);
+		$adStats    = [];
+		$weekStats  = [];
+		$monthStats = [];
+
+		$last_week  = null;
+		$last_month = null;
+		$aWeek      = null;
+		$aMonth     = null;
+
+		$adsMeta    = [];
+
+		for ($i=$startNb; $i<=($nbAds+$startNb);$i++) {
+			for ($x=1; $x<=$nbStat; $x++) {
+				$fbId = $i;
+		        $adId = $i;
+		        $time = strtotime("- $x days");
+		        $date = new \MongoDate($time);
+
+		        $imp          = rand(1, 500000);
+				$uniqueImp    = rand(1, $imp);
+				$socialImp    = rand(1, $uniqueImp);
+				$socialUImp   = rand(1, $socialImp);
+				$click        = rand(1, $imp);
+				$uniqueClick  = rand(1, $click);
+				$socialClick  = rand(1, $socialImp);
+				$socialUClick = rand(1, $socialClick);
+				$nf_imp       = rand(1, $imp);
+				$nf_click     = rand(1, $nf_imp);
+				$nf_pos       = rand(1, 15);
+				$impPayout    = floatval('1.'+rand(0, 999));
+				$spent        = $impPayout * ceil($imp / 1000);
+
+	        	if(!isset($this->adsMeta[$i])) {
+	        		$this->adsMeta[$i] = $input->getOption('nbAds')/100;
+	        	}
+
+	            $adStat = array(
+	            		'fbId' => $fbId,
+	            		'adId' => $adId,
+	                    'metaId' => $this->adsMeta[$i],
+	                    's'   => $spent,
+						'c'   => $click,
+						'sc'  => $socialClick,
+						'suc' => $socialUClick,
+						'i'   => $imp,
+						'si'  => $socialImp,
+						'sui' => $socialUImp,
+						'cp'  => $impPayout/2,
+						'nfi' => $nf_imp,
+						'nfc' => $nf_click,
+						'nfp' => $nf_pos,
+						'd'   => (int) date('Ymd', $time),
+	                );
+
+	            $coll->insert($adStat);
+	            
+	            $coll2->update(
+	            	array(
+	            		'fbId'   => $fbId, 
+	            		'adId'   => $adId, 
+	            		'metaId' => $this->adsMeta[$i],
+	            		'w'   => date('Y', $time).'-'.date('W', $time)
+	            		),
+	            	array(
+	            		'$inc' => array(
+	            			's'   => $spent,
+							'c'   => $click,
+							'sc'  => $socialClick,
+							'suc' => $socialUClick,
+							'i'   => $imp,
+							'si'  => $socialImp,
+							'sui' => $socialUImp,
+							'cp'  => $impPayout/2,
+							'nfi' => $nf_imp,
+							'nfc' => $nf_click,
+							'nfp' => $nf_pos,
+	            			),
+	            		),
+	            	array('upsert'=>true)
+	            	);
+
+	            $coll3->update(
+	            	array(
+	            		'fbId'   => $fbId, 
+	            		'adId'   => $adId,
+	            		'metaId' => $this->adsMeta[$i],
+	            		'm'   => date('Y', $time).'-'.date('m', $time)
 	            		),
 	            	array(
 	            		'$inc' => array(
