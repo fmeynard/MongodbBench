@@ -12,17 +12,19 @@ class AgregByDateCommand extends BaseCommand
 {
 	protected $description = '';
 	protected $help = array(
-			'ad' => '',
-			'meta' => '',
+			'ad'    => '',
+			'meta'  => '',
 			'start' => '',
 			'end'   => '',
-			'split' => ''
+			'split' => '',
+			'host'  => ''
 		);
 
 	public function configure()
 	{
 		$this->setName('bench:split:reduceTime')
 			->setDescription($this->description)
+			->addOption('host',  null, InputOption::VALUE_OPTIONAL, $this->help['host'], 'localhost')
 			->addOption('ad',    null, InputOption::VALUE_OPTIONAL, $this->help['ad'])
 			->addOption('meta',  null, InputOption::VALUE_OPTIONAL, $this->help['meta'])
 			->addOption('start', null, InputOption::VALUE_OPTIONAL, $this->help['start'])
@@ -31,7 +33,8 @@ class AgregByDateCommand extends BaseCommand
 			->addOption('split3', null, InputOption::VALUE_OPTIONAL, $this->help['split'])
 			->addOption('split4', null, InputOption::VALUE_OPTIONAL, $this->help['split'])
 			->addOption('split5', null, InputOption::VALUE_OPTIONAL, $this->help['split'])
-			->addOption('split6', null, InputOption::VALUE_OPTIONAL, $this->help['split']);
+			->addOption('split6', null, InputOption::VALUE_OPTIONAL, $this->help['split'])
+			->addOption('split7', null, InputOption::VALUE_OPTIONAL, $this->help['split']);
 
 	}	
 
@@ -43,6 +46,9 @@ class AgregByDateCommand extends BaseCommand
 	 */
 	public function execute(InputInterface $input, OutputInterface $output)
 	{
+		$this->setInput($input);
+        $this->setOutput($output);
+
 		$output->writeln("****************************");
         $output->writeln("*");
         $output->writeln("* GOALS PERFORMANCES");
@@ -71,6 +77,8 @@ class AgregByDateCommand extends BaseCommand
         	$this->split5();
         } elseif($input->getOption('split6')) {
         	$this->split6();
+        } elseif($input->getOption('split7')) {
+        	$this->split7();
         }
 	}
 
@@ -83,11 +91,14 @@ class AgregByDateCommand extends BaseCommand
 	 */
 	public function agregMetaByDate($meta, $start, $end)
 	{
+		$input  = $this->getInput();
+		$output = $this->getOutput();
+
 		$start = new \MongoDate(strtotime('-60 days'));
 		$end   = new \MongoDate(strtotime('now'));
 
 		echo "Agreg By Meta/Date";
-		$m    = new \MongoClient('mongodb://5.135.9.59');
+		$m    = new \MongoClient('mongodb://'.$input->getOption('host'));
         $db   = $m->selectDB('bench');
 		$coll = $db->selectCollection("adstatsplit");
 		\MongoCursor::$timeout = 120000;
@@ -144,8 +155,14 @@ class AgregByDateCommand extends BaseCommand
 		print_r($goals);
 	}
 
+	/**
+	 * split 2
+	 */
 	protected function split2()
 	{
+		$input  = $this->getInput();
+		$output = $this->getOutput();
+
 		$start = new \MongoDate(strtotime('-60 days'));
 		$end   = new \MongoDate(strtotime('now'));
 
@@ -154,7 +171,7 @@ class AgregByDateCommand extends BaseCommand
 		for($i=1; $i<500; $i++) $i[] = $ins;
 
 		echo "Agreg By Meta/Date";
-		$m    = new \MongoClient('mongodb://5.135.9.59');
+		$m    = new \MongoClient('mongodb://'.$input->getOption('host'));
         $db   = $m->selectDB('bench');
 		\MongoCursor::$timeout = 120000;
 
@@ -181,13 +198,19 @@ class AgregByDateCommand extends BaseCommand
 		$goals = $coll->aggregate($ops);
 	}
 
+	/**
+	 * split 3
+	 */
 	protected function split3()
 	{
+		$input  = $this->getInput();
+		$output = $this->getOutput();
+
 		$start = new \MongoDate(strtotime('-60 days'));
 		$end   = new \MongoDate(strtotime('now'));
 
 		echo "<<<< SPLIT 3 AGGREG >>>> \n";
-		$m    = new \MongoClient('mongodb://5.135.9.59');
+		$m    = new \MongoClient('mongodb://'.$input->getOption('host'));
         $db   = $m->selectDB('bench');
 
 		\MongoCursor::$timeout = 120000;
@@ -222,13 +245,19 @@ class AgregByDateCommand extends BaseCommand
 		print_r($goals);
 	}
 
+	/**
+	 * split 5
+	 */
 	protected function split5()
 	{
+		$input  = $this->getInput();
+		$output = $this->getOutput();
+
 		$start = new \MongoDate(strtotime('-60 days'));
 		$end   = new \MongoDate(strtotime('now'));
 
 		echo "<<<< SPLIT 5 AGGREG >>>> \n";
-		$m    = new \MongoClient('mongodb://5.135.9.59');
+		$m    = new \MongoClient('mongodb://'.$input->getOption('host'));
         $db   = $m->selectDB('bench');
 
 		\MongoCursor::$timeout = 120000;
@@ -273,8 +302,13 @@ class AgregByDateCommand extends BaseCommand
 		$goals = $coll->aggregate($ops);
 	}
 
+	/**
+	 * split 6
+	 */
 	public function split6()
 	{
+		$input  = $this->getInput();
+		$output = $this->getOutput();		
 
 		$start = new \DateTime();
 		$start->setTimestamp(strtotime('1 september 2012'));
@@ -290,7 +324,7 @@ class AgregByDateCommand extends BaseCommand
 		}
 
 		echo "<<<< SPLIT 6 AGGREG >>>> \n";
-		$m    = new \MongoClient('mongodb://5.135.9.59');
+		$m    = new \MongoClient('mongodb://'.$input->getOption('host'));
         $db   = $m->selectDB('bench');
 
 		\MongoCursor::$timeout = 120000;
@@ -394,5 +428,128 @@ class AgregByDateCommand extends BaseCommand
 		echo "find by trs  :: ". $endm2 . "s \n";
 
 		foreach ($test as $current) print_r($current);
+	}
+
+	/**
+	 * split 7
+	 */
+	public function split7()
+	{
+		$input  = $this->getInput();
+		$output = $this->getOutput();
+
+		$start = new \DateTime();
+		$start->setTimestamp(strtotime('1 september 2012'));
+
+		$end   = new \DateTime();
+		$end->setTimestamp(strtotime('12 february 2013'));
+
+		$trs = SMDateInterval::getTimeRanges($start->format('Y-m-d'), $end->format('Y-m-d'),'Y-m-d');
+
+		$days = [];
+		foreach ($trs['days'] as $dayTR) {
+			$days[] = (int) $dayTR->format('Ymd');
+		}
+
+		echo "<<<< SPLIT 6 AGGREG >>>> \n";
+		$m    = new \MongoClient('mongodb://'.$input->getOption('host'));
+        $db   = $m->selectDB('bench');
+
+		\MongoCursor::$timeout = 120000;
+
+		$ins = [];
+		for($i=1; $i<=2000; $i++) $ins[] = $i;
+
+		$coll  = $db->selectCollection("AdStat7Day");
+		$coll2 = $db->selectCollection("AdStat7Week");
+		$coll3 = $db->selectCollection("AdStat7Month");
+
+		// aggreg days
+		$startm = microtime(true);
+		$ops = array(
+				array(
+					'$match' => array(
+						'adId' => array('$in'=>$ins),
+						'd'    => array('$in' => $days)
+						)
+					),
+				array(
+					'$group' => array(
+						'_id' => array(
+							'adId' => '$adId',
+							'fbId' => '$fbId',
+							),
+						'i' => array('$sum' => '$i'),
+						'c' => array('$sum'=>'$c'),
+						's' => array('$sum'=>'$s'),
+						'sc' => array('$sum'=>'$sc'),
+						'uc' => array('$sum'=>'$uc'),
+						'suc'=> array('$sum'=>'$suc'),
+					)
+				),
+			);
+		$days = $coll->aggregate($ops);
+		$endm = microtime(true) - $startm;
+
+		// aggreg weeks
+		$startm2 = microtime(true);
+		$ops = array(
+				array(
+					'$match' => array(
+						'adId' => array('$in'=>$ins),
+						'w'    => array('$in' => $trs['weeks'])
+						)
+					),
+				array(
+					'$group' => array(
+						'_id' => array(
+							'adId' => '$adId',
+							'fbId' => '$fbId',
+							),
+						'i' => array('$sum' => '$i'),
+						'c' => array('$sum'=>'$c'),
+						's' => array('$sum'=>'$s'),
+						'sc' => array('$sum'=>'$sc'),
+						'uc' => array('$sum'=>'$uc'),
+						'suc'=> array('$sum'=>'$suc'),
+					)
+				),
+			);
+		$weeks = $coll->aggregate($ops);
+		$endm2 = microtime(true) - $startm2;
+
+		// aggreg months
+		$startm3 = microtime(true);
+		$ops = array(
+				array(
+					'$match' => array(
+						'adId' => array('$in'=>$ins),
+						'm'    => array('$in' => $trs['months'])
+						)
+					),
+				array(
+					'$group' => array(
+						'_id' => array(
+							'adId' => '$adId',
+							'fbId' => '$fbId',
+							),
+						'i' => array('$sum' => '$i'),
+						'c' => array('$sum'=>'$c'),
+						's' => array('$sum'=>'$s'),
+						'sc' => array('$sum'=>'$sc'),
+						'uc' => array('$sum'=>'$uc'),
+						'suc'=> array('$sum'=>'$suc'),
+					)
+				),
+			);
+		$months = $coll->aggregate($ops);
+		$endm3 = microtime(true) - $startm3;
+
+		$endm4 = $endm + $endm2 + $endm3;
+
+		echo "Agreg Days  :: ". $endm . "s \n";
+		echo "Agreg Weeks :: ". $endm2 . "s \n";
+		echo "Agreg Month :: ". $endm3 . "s \n";
+		echo "Agreg Total :: ". $endm4 . "s \n";
 	}
 }
