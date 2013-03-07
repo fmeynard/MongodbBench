@@ -441,7 +441,7 @@ class AgregByDateCommand extends BaseCommand
 		$end->setTimestamp(strtotime('12 february 2013'));
 
 		$trs = SMDateInterval::getTimeRanges($start->format('Y-m-d'), $end->format('Y-m-d'),'Y-m-d');
-
+        print_r($trs);
 		$days = [];
 		foreach ($trs['days'] as $dayTR) {
 			$days[] = (int) $dayTR->format('Ymd');
@@ -511,7 +511,7 @@ class AgregByDateCommand extends BaseCommand
 					)
 				),
 			);
-		$a_weeks = $coll->aggregate($ops);
+		$a_weeks = $coll2->aggregate($ops);
 		$endm2 = microtime(true) - $startm2;
 
 		// aggreg months
@@ -538,7 +538,7 @@ class AgregByDateCommand extends BaseCommand
 					)
 				),
 			);
-		$a_months = $coll->aggregate($ops);
+		$a_months = $coll3->aggregate($ops);
 		$endm3 = microtime(true) - $startm3;
 
 		$endm4 = $endm + $endm2 + $endm3;
