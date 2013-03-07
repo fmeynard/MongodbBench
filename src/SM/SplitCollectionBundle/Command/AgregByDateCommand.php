@@ -364,7 +364,6 @@ class AgregByDateCommand extends BaseCommand
 						'sc' => array('$sum'=>'$sc'),
 						'uc' => array('$sum'=>'$uc'),
 						'suc'=> array('$sum'=>'$suc'),
-						'dbs' => array('$addToSet'=>'$db')
 					)
 				),
 			);
@@ -372,7 +371,7 @@ class AgregByDateCommand extends BaseCommand
 		$stats = $coll->aggregate($ops);
 
 		$endm = microtime(true) - $startm;
-		echo "Agreg with TRS :: ". $endm . "s \n";
+		echo "Agreg with TRS ".count($stats['result']).":: ". $endm . "s \n";
 
 		$startm = microtime(true);
 		$ops = array(
@@ -394,14 +393,13 @@ class AgregByDateCommand extends BaseCommand
 						'sc' => array('$sum'=>'$sc'),
 						'uc' => array('$sum'=>'$uc'),
 						'suc'=> array('$sum'=>'$suc'),
-						'dbs' => array('$addToSet'=>'$db')
 						)
 					)
 			);
 
 		$stats2 = $coll->aggregate($ops);
 		$endm = microtime(true) - $startm;
-		echo "Agreg by db.d  :: ". $endm . "s \n";
+		echo "Agreg by db.d ".count($stats2['result'])."  :: ". $endm . "s \n";
 
 		$findQuery1 = array(
 						'adId' => array('$in'=>$ins),
@@ -426,8 +424,6 @@ class AgregByDateCommand extends BaseCommand
 		$endm = microtime(true) - $startm;
 		echo "find by db.d  :: ". $endm . "s \n";
 		echo "find by trs  :: ". $endm2 . "s \n";
-
-		foreach ($test as $current) print_r($current);
 	}
 
 	/**
@@ -451,7 +447,7 @@ class AgregByDateCommand extends BaseCommand
 			$days[] = (int) $dayTR->format('Ymd');
 		}
 
-		echo "<<<< SPLIT 6 AGGREG >>>> \n";
+		echo "<<<< SPLIT 7 AGGREG >>>> \n";
 		$m    = new \MongoClient('mongodb://'.$input->getOption('host'));
         $db   = $m->selectDB('bench');
 
@@ -488,7 +484,7 @@ class AgregByDateCommand extends BaseCommand
 					)
 				),
 			);
-		$days = $coll->aggregate($ops);
+		$a_days = $coll->aggregate($ops);
 		$endm = microtime(true) - $startm;
 
 		// aggreg weeks
@@ -515,7 +511,7 @@ class AgregByDateCommand extends BaseCommand
 					)
 				),
 			);
-		$weeks = $coll->aggregate($ops);
+		$a_weeks = $coll->aggregate($ops);
 		$endm2 = microtime(true) - $startm2;
 
 		// aggreg months
@@ -542,14 +538,14 @@ class AgregByDateCommand extends BaseCommand
 					)
 				),
 			);
-		$months = $coll->aggregate($ops);
+		$a_months = $coll->aggregate($ops);
 		$endm3 = microtime(true) - $startm3;
 
 		$endm4 = $endm + $endm2 + $endm3;
 
-		echo "Agreg Days  :: ". $endm . "s \n";
-		echo "Agreg Weeks :: ". $endm2 . "s \n";
-		echo "Agreg Month :: ". $endm3 . "s \n";
+        echo "Agreg days  ". (count($a_days['result'])).  " :: ". $endm . "s \n";
+		echo "Agreg Weeks ". (count($a_weeks['result'])). " :: ". $endm2 . "s \n";
+		echo "Agreg Month ". (count($a_months['result'])). ":: ". $endm3 . "s \n";
 		echo "Agreg Total :: ". $endm4 . "s \n";
 	}
 }

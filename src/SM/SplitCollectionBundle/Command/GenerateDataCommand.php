@@ -11,12 +11,13 @@ class GenerateDataCommand extends BaseCommand
 	protected $description ='';
 	protected $adsMeta = array();
 
-	protected $help = array(
-			'nbAds'         => '',
-			'nbStat'        => '',
-			'chunk' => '',
-			'splitAlt'     => '',
-			'startNb' => ''
+    protected $help = array(
+            'host'     => 'localhost',
+			'nbAds'    => '',
+			'nbStat'   => '',
+			'chunk'    => '',
+			'splitAlt' => '',
+			'startNb'  => ''
 		);
 
 	/**
@@ -27,14 +28,16 @@ class GenerateDataCommand extends BaseCommand
 	public function configure()
 	{
 		$this->setName('bench:split:generateData')
-			->setDescription($this->description)
+            ->setDescription($this->description)
+            ->addOption('host',          null, InputOption::VALUE_OPTIONAL, $this->help['host'], "localhost")
             ->addOption('nbAds',         null, InputOption::VALUE_OPTIONAL, $this->help['nbAds'],         200)
             ->addOption('nbStat',        null, InputOption::VALUE_OPTIONAL, $this->help['nbStat'],        300)
             ->addOption('chunk',         null, InputOption::VALUE_OPTIONAL, $this->help['chunk'],         1000)
             ->addOption('startNb',       null, InputOption::VALUE_OPTIONAL, $this->help['startNb'],       1)
             ->addOption('splitAlt',      null, InputOption::VALUE_OPTIONAL, $this->help['splitAlt'])
             ->addOption('splitAltOld',   null, InputOption::VALUE_OPTIONAL, $this->help['splitAlt'])
-            ->addOption('split6',        null, InputOption::VALUE_OPTIONAL, $this->help['splitAlt']);
+            ->addOption('split6',        null, InputOption::VALUE_OPTIONAL, $this->help['splitAlt'])
+            ->addOption('split7',        null, InputOption::VALUE_OPTIONAL, $this->help['splitAlt']);
 	}
 
 	/**
@@ -59,7 +62,9 @@ class GenerateDataCommand extends BaseCommand
         $output->writeln("****************************");
 
         //ggc_enable();
-        if ($input->getOption('split6')) {
+        if ($input->getOption('split7')) {
+            $this->generateSplit7();
+        } elseif ($input->getOption('split6')) {
         	$this->generateSplit6();
         } elseif ($input->getOption('splitAlt')) {
         	$this->goalsByObjectId($input, $output);
@@ -614,7 +619,11 @@ class GenerateDataCommand extends BaseCommand
 		}
 	}
 
-	public function split7()
+    /**
+     * Generate SPLIT7 command
+     *
+     */
+	public function generateSplit7()
 	{
 		$input  = $this->getInput();
 		$output = $this->getOutput();
